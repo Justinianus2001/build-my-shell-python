@@ -36,7 +36,7 @@ def main():
             print(os.getcwd())
         case ["cd", path]:
             try:
-                os.chdir(path)
+                os.chdir(os.path.expanduser(path))
             except FileNotFoundError:
                 print(f"cd: {path}: No such file or directory")
         case _:
