@@ -1,9 +1,17 @@
 def main():
     # Wait for user input
     command = input("$ ")
-    if command == "exit 0":
-        return 0
-    print(f"{command}: command not found")
+
+    command_split = command.split()
+
+    match command_split[0]:
+        case "exit":
+            return 0
+        case "echo":
+            print(" ".join(command_split[1:]))
+        case _:
+            print(f"{command}: command not found")
+
     main()
 
 
