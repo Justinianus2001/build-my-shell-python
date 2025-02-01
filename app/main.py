@@ -1,4 +1,5 @@
 import os
+import shlex
 
 
 def get_command_path(command):
@@ -17,7 +18,7 @@ def main():
     # Wait for user input
     command = input("$ ").strip()
 
-    match command.split(" "):
+    match shlex.split(command):
         case ["exit", code]:
             return int(code)
         case ["echo", *text]:
@@ -33,6 +34,11 @@ def main():
                 print(f"{builtin}: not found")
         case ["pwd"]:
             print(os.getcwd())
+        case ["cd", path]:
+            try:
+                os.chdir(path)
+            except FileNotFoundError:
+                print(f"cd: {path}: No such file or directory")
         case _:
             if get_command_path(command.split(" ")[0]):
                 os.system(command)
