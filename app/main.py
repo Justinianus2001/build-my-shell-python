@@ -1,20 +1,29 @@
 import os
 
 
+def get_command_path(command):
+    paths = os.getenv("PATH").split(os.pathsep)
+
+    for path in paths:
+        if os.path.exists(f"{path}/{command}"):
+            return f"{path}/{command}"
+
+    return None
+
+
 def main():
     builtins = {"exit", "echo", "type"}
-    paths = os.getenv("PATH").split(":")
 
     # Wait for user input
-    command = input("$ ")
+    command = input("$ ").strip()
 
-    match command.split():
+    match command.split(" "):
         case ["exit", code]:
             return int(code)
         case ["echo", *text]:
             print(*text)
         case ["type", builtin]:
-            command_path = next((f"{path}/{builtin}" for path in paths if os.path.exists(f"{path}/{builtin}")), None)
+            command_path = get_command_path(builtin)
 
             if builtin in builtins:
                 print(f"{builtin} is a shell builtin")
@@ -23,7 +32,10 @@ def main():
             else:
                 print(f"{builtin}: not found")
         case _:
-            print(f"{command}: command not found")
+            if get_command_path(command.split(" ")[0]):
+                os.system(command)
+            else:
+                print(f"{command}: command not found")
 
     main()
 
