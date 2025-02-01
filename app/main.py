@@ -13,7 +13,7 @@ def get_command_path(command):
 
 
 def main():
-    builtins = {"exit", "echo", "type", "pwd"}
+    builtins = {"exit", "echo", "type", "pwd", "cd"}
 
     # Wait for user input
     command = input("$ ").strip()
@@ -40,7 +40,7 @@ def main():
             except FileNotFoundError:
                 print(f"cd: {path}: No such file or directory")
         case _:
-            if get_command_path(command.split(" ")[0]):
+            if get_command_path(shlex.split(command)[0]):
                 os.system(command)
             else:
                 print(f"{command}: command not found")
