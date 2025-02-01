@@ -12,7 +12,7 @@ def get_command_path(command):
 
 
 def main():
-    builtins = {"exit", "echo", "type"}
+    builtins = {"exit", "echo", "type", "pwd"}
 
     # Wait for user input
     command = input("$ ").strip()
@@ -31,6 +31,8 @@ def main():
                 print(f"{builtin} is {command_path}")
             else:
                 print(f"{builtin}: not found")
+        case ["pwd"]:
+            print(os.getcwd())
         case _:
             if get_command_path(command.split(" ")[0]):
                 os.system(command)
