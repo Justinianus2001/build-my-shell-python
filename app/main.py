@@ -1,5 +1,8 @@
+import functools
 import os
 import shlex
+import subprocess
+import sys
 
 
 def get_command_path(command):
@@ -17,6 +20,13 @@ def main():
 
     # Wait for user input
     command = input("$ ").strip()
+    out = sys.stdout
+
+    if "1>" in command or ">" in command:
+        command, output_file = command.replace("1>", ">").split(">")
+        out = open(output_file.strip(), "w")
+
+    __builtins__.print = functools.partial(__builtins__.print, file=out)
 
     match shlex.split(command):
         case ["exit", code]:
@@ -39,11 +49,14 @@ def main():
                 os.chdir(os.path.expanduser(path))
             except FileNotFoundError:
                 print(f"cd: {path}: No such file or directory")
-        case _:
-            if get_command_path(shlex.split(command)[0]):
-                os.system(command)
+        case [file, *args]:
+            if get_command_path(file):
+                subprocess.run([file, *args], stdout=out)
             else:
                 print(f"{command}: command not found")
+
+    if out is not sys.stdout:
+        out.close()
 
     main()
 
