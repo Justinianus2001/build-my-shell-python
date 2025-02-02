@@ -15,10 +15,9 @@ executables = []
 def get_executables():
     for path in paths:
         try:
-            for filename in os.listdir(path):
-                fullpath = os.path.join(path, filename)
-                if os.access(fullpath, os.X_OK):
-                    executables.append(filename)
+            for file_name in os.listdir(path):
+                if os.access(f"{path}/{file_name}", os.X_OK):
+                    executables.append(file_name)
         except FileNotFoundError:
             pass
 
@@ -28,6 +27,12 @@ def completer(text, state):
     options += [command + " " for command in executables if command.startswith(text)]
 
     return options[state] if state < len(options) else None
+
+
+def display_matches(substitution, matches, longest_match_length):
+    print()
+    print(" ".join(matches))
+    print("$ " + substitution, end="")
 
 
 def handle_redirects(command, out, err, symbol):
@@ -56,6 +61,7 @@ def get_command_path(command):
 def main():
     readline.parse_and_bind("tab: complete")
     readline.set_completer(completer)
+    readline.set_completion_display_matches_hook(display_matches)
 
     while True:
         # Wait for user input
