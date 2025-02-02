@@ -5,6 +5,21 @@ import subprocess
 import sys
 
 
+def handle_redirects(command, out, err, symbol):
+    command, file = command.split(symbol)
+    file = file.strip()
+
+    match symbol:
+        case "2>>":
+            return command, out, open(file, "a")
+        case "1>>" | ">>":
+            return command, open(file, "a"), err
+        case "2>":
+            return command, out, open(file, "w")
+        case "1>" | ">":
+            return command, open(file, "w"), err
+
+
 def get_command_path(command):
     paths = os.getenv("PATH").split(os.pathsep)
 
@@ -17,18 +32,17 @@ def get_command_path(command):
 
 def main():
     builtins = {"exit", "echo", "type", "pwd", "cd"}
+    redirect_symbols = ["2>>", "1>>", ">>", "2>", "1>", ">"]
 
     # Wait for user input
     command = input("$ ").strip()
     out = sys.stdout
     err = sys.stderr
 
-    if "2>" in command:
-        command, output_file = command.split("2>")
-        err = open(output_file.strip(), "w")
-    elif ">" in command:
-        command, output_file = command.replace("1>", ">").split(">")
-        out = open(output_file.strip(), "w")
+    for symbol in redirect_symbols:
+        if symbol in command:
+            command, out, err = handle_redirects(command, out, err, symbol)
+            break
 
     print = functools.partial(__builtins__.print, file=out)
     print_err = functools.partial(__builtins__.print, file=err)
