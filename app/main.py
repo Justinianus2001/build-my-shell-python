@@ -21,12 +21,17 @@ def main():
     # Wait for user input
     command = input("$ ").strip()
     out = sys.stdout
+    err = sys.stderr
 
-    if "1>" in command or ">" in command:
+    if "2>" in command:
+        command, output_file = command.split("2>")
+        err = open(output_file.strip(), "w")
+    elif ">" in command:
         command, output_file = command.replace("1>", ">").split(">")
         out = open(output_file.strip(), "w")
 
-    __builtins__.print = functools.partial(__builtins__.print, file=out)
+    print = functools.partial(__builtins__.print, file=out)
+    print_err = functools.partial(__builtins__.print, file=err)
 
     match shlex.split(command):
         case ["exit", code]:
@@ -48,15 +53,18 @@ def main():
             try:
                 os.chdir(os.path.expanduser(path))
             except FileNotFoundError:
-                print(f"cd: {path}: No such file or directory")
+                print_err(f"cd: {path}: No such file or directory")
         case [file, *args]:
             if get_command_path(file):
-                subprocess.run([file, *args], stdout=out)
+                subprocess.run([file, *args], stdout=out, stderr=err)
             else:
-                print(f"{command}: command not found")
+                print_err(f"{command}: command not found")
 
     if out is not sys.stdout:
         out.close()
+
+    if err is not sys.stderr:
+        err.close()
 
     main()
 
