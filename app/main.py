@@ -8,10 +8,25 @@ import sys
 
 builtins = {"exit", "echo", "type", "pwd", "cd"}
 redirect_symbols = ["2>>", "1>>", ">>", "2>", "1>", ">"]
+paths = os.getenv("PATH").split(os.pathsep)
+executables = []
+
+
+def get_executables():
+    for path in paths:
+        try:
+            for filename in os.listdir(path):
+                fullpath = os.path.join(path, filename)
+                if os.access(fullpath, os.X_OK):
+                    executables.append(filename)
+        except FileNotFoundError:
+            pass
 
 
 def completer(text, state):
     options = [command + " " for command in builtins if command.startswith(text)]
+    options += [command + " " for command in executables if command.startswith(text)]
+
     return options[state] if state < len(options) else None
 
 
@@ -31,8 +46,6 @@ def handle_redirects(command, out, err, symbol):
 
 
 def get_command_path(command):
-    paths = os.getenv("PATH").split(os.pathsep)
-
     for path in paths:
         if os.path.exists(f"{path}/{command}"):
             return f"{path}/{command}"
@@ -93,4 +106,5 @@ def main():
 
 
 if __name__ == "__main__":
+    get_executables()
     main()
